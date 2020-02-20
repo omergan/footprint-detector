@@ -10,7 +10,6 @@ import cv2
     @output:        Original, Scale with dots, No scale.
 """
 
-
 def read_images():
     filenames = [img for img in glob.glob("../images/q1/*.jpg")]
     images = []
@@ -18,12 +17,19 @@ def read_images():
         images.append(cv2.cvtColor(cv2.imread(filename), cv2.COLOR_BGR2RGB))
     return images
 
-
 def show_image(img):
     plt.imshow(img)
     plt.xticks([]), plt.yticks([])  # to hide tick values on X and Y axis
     plt.show()
 
+def remove_ruler(img):
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    blur = cv2.GaussianBlur(gray, (1, 1), 0)
+    edges = cv2.Canny(blur, 100, 200)
+    return edges
 
-pictures = read_images()
-show_image(pictures[0])
+
+def main():
+    pictures = read_images()
+    show_image(remove_ruler(pictures[0]))
+main()
