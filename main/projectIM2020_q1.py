@@ -26,20 +26,30 @@ def show_image(org, img):
     plt.show()
 
 def remove_ruler(image):
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    edges = cv2.Canny(gray, 125, 200, apertureSize=3)
+    img = image.copy()
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    kernel = np.ones((5, 5), np.uint8)
+    erosion = cv2.erode(gray, kernel, iterations=1)
+    edges = cv2.Canny(erosion, 75, 150, apertureSize=3)
     # Detect points that form a line
-
-    lines = cv2.HoughLinesP(edges, 0.5, np.pi / 180, 125, minLineLength=100, maxLineGap=20)
+    lines = cv2.HoughLinesP(edges, 1, np.pi / 180, 30, minLineLength=500, maxLineGap=50)
     # Draw lines on the image
     for line in lines:
         x1, y1, x2, y2 = line[0]
-        cv2.line(image, (x1, y1), (x2, y2), (255, 0, 0), 3)
-    return edges
+        cv2.line(img, (x1, y1), (x2, y2), (255, 0, 0), 3)
+
+    return img
+
+def detect_chess(image):
+    img = image.copy()
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    print("Im here")
+    found, corners = cv2.findChessboardCorners(gray, (9, 6), None)
+    return corners
 
 def main():
     pictures = read_images()
-    show_image(pictures[0], remove_ruler(pictures[0]))
-    show_image(pictures[1], remove_ruler(pictures[1]))
-    show_image(pictures[2], remove_ruler(pictures[2]))
+    show_image(pictures[0], detect_chess(pictures[0]))
+    show_image(pictures[1], detect_chess(pictures[1]))
+    show_image(pictures[2], detect_chess(pictures[2]))
 main()
