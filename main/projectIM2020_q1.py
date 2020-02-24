@@ -3,6 +3,8 @@ import numpy as np
 from matplotlib import pyplot as plt
 import glob
 import cv2
+import scipy.stats
+import PIL.Image
 
 """
     @title :        Main for Q1
@@ -37,19 +39,26 @@ def remove_ruler(image):
     for line in lines:
         x1, y1, x2, y2 = line[0]
         cv2.line(img, (x1, y1), (x2, y2), (255, 0, 0), 3)
-
+    x1, y1, x2, y2 = lines[len(lines) - 1][0]
+    print('x1:' + str(x1) + ' y1:' + str(y1) + ' x2:' + str(x2) + ' y2:' + str(y2))
     return img
 
 def detect_chess(image):
     img = image.copy()
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    print("Im here")
-    found, corners = cv2.findChessboardCorners(gray, (9, 6), None)
-    return corners
+    edged = cv2.Canny(gray, 100, 550)
+    ret, thresh = cv2.threshold(edged, 75, 255, 0)
+    im2, contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    cv2.drawContours(img, contours, -1, (0, 255, 0), 3)
+    corners = cv2.goodFeaturesToTrack(gray, 25, 0.01, 10)
+    corners = np.int0(corners)
+
+    for i in corners:
+        x, y = i.ravel()
+        cv2.circle(img, (x, y), 3, 255, -1)
+    return img
 
 def main():
     pictures = read_images()
     show_image(pictures[0], detect_chess(pictures[0]))
-    show_image(pictures[1], detect_chess(pictures[1]))
-    show_image(pictures[2], detect_chess(pictures[2]))
 main()
