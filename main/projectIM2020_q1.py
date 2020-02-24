@@ -50,12 +50,6 @@ def detect_chess(image):
     ret, thresh = cv2.threshold(edged, 75, 255, 0)
     im2, contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     cv2.drawContours(img, contours, -1, (0, 255, 0), 3)
-    corners = cv2.goodFeaturesToTrack(gray, 25, 0.01, 10)
-    corners = np.int0(corners)
-
-    for i in corners:
-        x, y = i.ravel()
-        cv2.circle(img, (x, y), 3, 255, -1)
     return img
 
 def main():
