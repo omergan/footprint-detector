@@ -2,8 +2,6 @@
 import numpy as np
 from matplotlib import pyplot as plt
 import glob
-
-import random as rng
 import cv2
 
 """
@@ -82,7 +80,7 @@ def main():
     detected_3 = detect_chess(pictures[2])
 
     # Plotting Q1B
-    show_image(pictures[0], detected_1)
+    show_image(pictures[0], removed_1)
     # show_image(img_rotate_90_counterclockwise, detected_2)
     # show_image(pictures[2], detected_3)
 
