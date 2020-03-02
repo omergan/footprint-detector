@@ -30,27 +30,32 @@ def show_image(org, img):
 
 def search_engine(database, search):
     working_copy = search.copy()
-    kernel = np.ones((1, 1), np.uint8)
-    max = 0
+    maximum = 0
     match = []
-    orb = cv2.ORB_create()
-    gray_working_copy = cv2.cvtColor(working_copy, cv2.COLOR_BGR2GRAY)
-    edges = cv2.Canny(gray_working_copy, 50, 150, apertureSize=3)
-    blur = cv2.GaussianBlur(img, (3, 3), 0)
-    kp1, des1 = orb.detectAndCompute(blur, None)
+    sift = cv2.xfeatures2d.SIFT_create()
     for i, candidate in enumerate(database):
-        # closing = cv2.morphologyEx(candidate, cv2.MORPH_CLOSE, kernel)
-        candidate_edges = cv2.Canny(candidate, 50, 150, apertureSize=3)
-        kp2, des2 = orb.detectAndCompute(candidate, None)
-        bf = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
-        matches = bf.match(des1, des2)
-        # matches = sorted(matches, key=lambda x: x.distance)
-        print(f'{len(matches)} {names[i + 6]}')
-        if len(matches) > max:
-            max = len(matches)
-            match = database[i]
-    show_image(search, match)
+        kp1, des1 = sift.detectAndCompute(working_copy, None)
+        kp2, des2 = sift.detectAndCompute(candidate, None)
 
+        FLANN_INDEX_KDTREE = 0
+        index_params = dict(algorithm=FLANN_INDEX_KDTREE, trees=5)
+        search_params = dict(checks=50)
+
+        flann = cv2.FlannBasedMatcher(index_params, search_params)
+
+        matches = flann.knnMatch(des1, des2, k=2)
+        # store all the good matches as per Lowe's ratio test.
+        good = []
+        for m, n in matches:
+            if m.distance < 0.9 * n.distance:
+                good.append(m)
+        if len(good) > 10:
+            if len(good) > maximum:
+                maximum = len(good)
+                match = candidate
+        else:
+            print("Not enough matches are found - %d !> %d" % (len(good), 10))
+    show_image(search, match)
 
 images = read_images("../images/q3/*.png")
 db = read_images("../images/q2/*.png")
