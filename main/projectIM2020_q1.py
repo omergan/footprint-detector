@@ -11,7 +11,7 @@ import cv2
 """
 
 def read_images():
-    filenames = [img for img in glob.glob("../images/q1/*.jpg")]
+    filenames = [img for img in glob.glob("../images/q1/*.JPG")]
     images = []
     for filename in filenames:
         images.append(cv2.cvtColor(cv2.imread(filename), cv2.COLOR_BGR2RGB))
@@ -68,20 +68,22 @@ def main():
     # Rulers Removed
     removed_1 = remove_ruler(pictures[0])
     removed_2 = remove_ruler(img_rotate_90_counterclockwise)
-    removed_3 = remove_ruler(pictures[2])
+    removed_3 = remove_ruler(pictures[3])
+    # removed_4 = remove_ruler(img_rotate_90_counterclockwise)
 
     # Plotting Q1A
     # show_image(pictures[0], removed_1)
     # show_image(img_rotate_90_counterclockwise, removed_2)
     # show_image(pictures[2], removed_3)
 
-    detected_1 = detect_chess(pictures[0])
-    detected_2 = detect_chess(img_rotate_90_counterclockwise)
-    detected_3 = detect_chess(pictures[2])
+    # detected_1 = detect_chess(pictures[0])
+    # detected_2 = detect_chess(img_rotate_90_counterclockwise)
+    # detected_3 = detect_chess(pictures[2])
 
     # Plotting Q1B
     show_image(pictures[0], removed_1)
-    # show_image(img_rotate_90_counterclockwise, detected_2)
-    # show_image(pictures[2], detected_3)
+    show_image(img_rotate_90_counterclockwise, removed_2)
+    show_image(pictures[3], removed_3)
+    # show_image(img_rotate_90_counterclockwise, removed_4)
 
 main()
