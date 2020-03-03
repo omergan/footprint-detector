@@ -57,8 +57,27 @@ def vertical_or_horizontal(line):
 def detect_chess(image):
     img = image.copy()
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    kernel = np.ones((2, 2), np.uint8)
+    erosion = cv2.erode(gray, kernel, iterations=2)
+    edges = cv2.Canny(erosion, 127, 200, apertureSize=3)
+    im, contours, hierarchy = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+
+    for c in contours:
+        shape = detect(c)
+        if shape == "rectangle":
+            cv2.drawContours(img, c, -1, (0, 255, 0), 3)
     return img
 
+
+def detect(c):
+    shape = "unidentified"
+    peri = cv2.arcLength(c, True)
+    approx = cv2.approxPolyDP(c, 0.04 * peri, True)
+    if len(approx) == 4:
+        (x, y, w, h) = cv2.boundingRect(approx)
+        ar = w / float(h)
+        shape = "square" if 0.95 <= ar <= 1.05 else "rectangle"
+    return shape
 
 def main():
     # Read and rotate image if you need
@@ -68,22 +87,20 @@ def main():
     # Rulers Removed
     removed_1 = remove_ruler(pictures[0])
     removed_2 = remove_ruler(img_rotate_90_counterclockwise)
-    removed_3 = remove_ruler(pictures[3])
-    # removed_4 = remove_ruler(img_rotate_90_counterclockwise)
+    removed_3 = remove_ruler(pictures[2])
 
     # Plotting Q1A
     # show_image(pictures[0], removed_1)
     # show_image(img_rotate_90_counterclockwise, removed_2)
     # show_image(pictures[2], removed_3)
 
-    # detected_1 = detect_chess(pictures[0])
-    # detected_2 = detect_chess(img_rotate_90_counterclockwise)
-    # detected_3 = detect_chess(pictures[2])
+    detected_1 = detect_chess(pictures[0])
+    detected_2 = detect_chess(img_rotate_90_counterclockwise)
+    detected_3 = detect_chess(pictures[2])
 
     # Plotting Q1B
-    show_image(pictures[0], removed_1)
-    show_image(img_rotate_90_counterclockwise, removed_2)
-    show_image(pictures[3], removed_3)
-    # show_image(img_rotate_90_counterclockwise, removed_4)
+    show_image(pictures[0], detected_1)
+    show_image(img_rotate_90_counterclockwise, detected_2)
+    show_image(pictures[2], detected_3)
 
 main()
