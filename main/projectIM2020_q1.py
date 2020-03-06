@@ -56,28 +56,39 @@ def vertical_or_horizontal(line):
 
 def detect_chess(image):
     img = image.copy()
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    kernel = np.ones((2, 2), np.uint8)
-    erosion = cv2.erode(gray, kernel, iterations=2)
-    edges = cv2.Canny(erosion, 127, 200, apertureSize=3)
-    im, contours, hierarchy = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+    ret, thresh = cv2.threshold(cv2.cvtColor(img.copy(), cv2.COLOR_BGR2GRAY), 75, 150, cv2.THRESH_BINARY_INV)
+    ret, thresh = cv2.threshold(thresh, 75, 150, cv2.THRESH_BINARY)
+    image, contours, _ = cv2.findContours(thresh, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
 
     for c in contours:
-        shape = detect(c)
-        if shape == "rectangle":
-            cv2.drawContours(img, c, -1, (0, 255, 0), 3)
+        # find bounding box coordinates
+        peri = cv2.arcLength(c, True)
+        approx = cv2.approxPolyDP(c, 0.04 * peri, True)
+        if len(approx) == 4:
+            x, y, w, h = cv2.boundingRect(c)
+            # find minimum area
+            if w * h > 500:
+                rect = cv2.minAreaRect(c)
+                # calculate coordinates of the minimum area rectangle
+                box = cv2.boxPoints(rect)
+                # normalize coordinates to integers
+                box = np.int0(box)
+                # draw contours
+                cv2.drawContours(img, [box], 0, (0, 0, 255), 3)
     return img
 
 
 def detect(c):
-    shape = "unidentified"
     peri = cv2.arcLength(c, True)
     approx = cv2.approxPolyDP(c, 0.04 * peri, True)
     if len(approx) == 4:
         (x, y, w, h) = cv2.boundingRect(approx)
         ar = w / float(h)
-        shape = "square" if 0.95 <= ar <= 1.05 else "rectangle"
-    return shape
+
+        # a square will have an aspect ratio that is approximately
+        # equal to one, otherwise, the shape is a rectangle
+        return "square" if 0.95 <= ar <= 1.05 else "rectangle"
+    return "unidentified"
 
 def main():
     # Read and rotate image if you need
