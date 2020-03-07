@@ -54,41 +54,45 @@ def vertical_or_horizontal(line):
     m = abs(y1 - y2) / abs(x1 - x2)
     return 'vertical' if m > 1 else 'horizontal'
 
-def detect_chess(image):
+def chess_detection(image):
     img = image.copy()
-    ret, thresh = cv2.threshold(cv2.cvtColor(img.copy(), cv2.COLOR_BGR2GRAY), 75, 150, cv2.THRESH_BINARY_INV)
-    ret, thresh = cv2.threshold(thresh, 75, 150, cv2.THRESH_BINARY)
-    image, contours, _ = cv2.findContours(thresh, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+    gray = cv2.cvtColor(img.copy(), cv2.COLOR_BGR2GRAY)
+    thresh_holds = []
+    _, thresh1 = cv2.threshold(gray, 75, 150, cv2.THRESH_BINARY_INV)
+    _, thresh2 = cv2.threshold(gray, 75, 150, cv2.THRESH_BINARY)
+    thresh3 = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 31, 5)
+    thresh4 = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 111, 0)
 
-    for c in contours:
-        # find bounding box coordinates
-        peri = cv2.arcLength(c, True)
-        approx = cv2.approxPolyDP(c, 0.04 * peri, True)
-        if len(approx) == 4:
-            x, y, w, h = cv2.boundingRect(c)
-            # find minimum area
-            if w * h > 500:
-                rect = cv2.minAreaRect(c)
-                # calculate coordinates of the minimum area rectangle
-                box = cv2.boxPoints(rect)
-                # normalize coordinates to integers
-                box = np.int0(box)
-                # draw contours
-                cv2.drawContours(img, [box], 0, (0, 0, 255), 3)
+    thresh_holds.append(thresh1)
+    thresh_holds.append(thresh2)
+    thresh_holds.append(thresh3)
+    thresh_holds.append(thresh4)
+
+    rectangles = []
+
+    for thresh in thresh_holds:
+        _, contours, _ = cv2.findContours(thresh, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+        for c in contours:
+            # find bounding box coordinates
+            peri = cv2.arcLength(c, True)
+            approx = cv2.approxPolyDP(c, 0.12 * peri, True)
+            if len(approx) == 4:
+                x, y, w, h = cv2.boundingRect(c)
+                area = cv2.contourArea(c)
+                # find minimum area
+                if 500 < area < 20000:
+                    rect = cv2.minAreaRect(c)
+                    # calculate coordinates of the minimum area rectangle
+                    box = cv2.boxPoints(rect)
+                    # normalize coordinates to integers
+                    box = np.int0(box)
+                    # draw contours
+                    cv2.drawContours(img, [box], 0, (0, 0, 255), 3)
+                    rectangles.append(rect)
+
+    for rect in rectangles:
+        print(rect)
     return img
-
-
-def detect(c):
-    peri = cv2.arcLength(c, True)
-    approx = cv2.approxPolyDP(c, 0.04 * peri, True)
-    if len(approx) == 4:
-        (x, y, w, h) = cv2.boundingRect(approx)
-        ar = w / float(h)
-
-        # a square will have an aspect ratio that is approximately
-        # equal to one, otherwise, the shape is a rectangle
-        return "square" if 0.95 <= ar <= 1.05 else "rectangle"
-    return "unidentified"
 
 def main():
     # Read and rotate image if you need
@@ -96,18 +100,18 @@ def main():
     img_rotate_90_counterclockwise = cv2.rotate(pictures[1], cv2.ROTATE_90_COUNTERCLOCKWISE)
 
     # Rulers Removed
-    removed_1 = remove_ruler(pictures[0])
-    removed_2 = remove_ruler(img_rotate_90_counterclockwise)
-    removed_3 = remove_ruler(pictures[2])
+    # removed_1 = remove_ruler(pictures[0])
+    # removed_2 = remove_ruler(img_rotate_90_counterclockwise)
+    # removed_3 = remove_ruler(pictures[2])
 
     # Plotting Q1A
     # show_image(pictures[0], removed_1)
     # show_image(img_rotate_90_counterclockwise, removed_2)
     # show_image(pictures[2], removed_3)
 
-    detected_1 = detect_chess(pictures[0])
-    detected_2 = detect_chess(img_rotate_90_counterclockwise)
-    detected_3 = detect_chess(pictures[2])
+    detected_1 = chess_detection(pictures[0])
+    detected_2 = chess_detection(img_rotate_90_counterclockwise)
+    detected_3 = chess_detection(pictures[2])
 
     # Plotting Q1B
     show_image(pictures[0], detected_1)
