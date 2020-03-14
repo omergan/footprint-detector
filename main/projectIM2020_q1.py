@@ -101,7 +101,7 @@ def chess_detection(image):
                     # normalize coordinates to integers
                     box = np.int0(box)
                     # draw contours
-                    if (abs(rect[1][0] - rect[1][1]) > 20):
+                    if abs(rect[1][0] - rect[1][1]) > 20:
                         cv2.drawContours(img, [box], 0, (0, 0, 255), 3)
                         rectangles.append(rect)
     horizontal = []
