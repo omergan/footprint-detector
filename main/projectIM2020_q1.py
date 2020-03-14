@@ -54,6 +54,20 @@ def vertical_or_horizontal(line):
     m = abs(y1 - y2) / abs(x1 - x2)
     return 'vertical' if m > 1 else 'horizontal'
 
+def drawRect(img, rect):
+        if abs(rect[2]) < 10:
+            h = rect[1][0]/2
+            w = rect[1][1]/2
+        elif abs(abs(rect[2]) - 90) < 10:
+            h = rect[1][1]/2
+            w = rect[1][0]/2
+        else:
+            return
+        cv2.circle(img, (int(rect[0][0] - h), int(rect[0][1] - w)), 3, (255, 0, 0), 3)
+        cv2.circle(img, (int(rect[0][0] - h), int(rect[0][1] + w)), 3, (255, 0, 0), 3)
+        cv2.circle(img, (int(rect[0][0] + h), int(rect[0][1] - w)), 3, (255, 0, 0), 3)
+        cv2.circle(img, (int(rect[0][0] + h), int(rect[0][1] + w)), 3, (255, 0, 0), 3)
+
 def chess_detection(image):
     img = image.copy()
     gray = cv2.cvtColor(img.copy(), cv2.COLOR_BGR2GRAY)
@@ -69,9 +83,9 @@ def chess_detection(image):
     thresh_holds.append(thresh4)
 
     rectangles = []
-
     for thresh in thresh_holds:
-        _, contours, _ = cv2.findContours(thresh, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+        # TODO : check for version
+        contours, _ = cv2.findContours(thresh, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
         for c in contours:
             # find bounding box coordinates
             peri = cv2.arcLength(c, True)
@@ -80,19 +94,36 @@ def chess_detection(image):
                 x, y, w, h = cv2.boundingRect(c)
                 area = cv2.contourArea(c)
                 # find minimum area
-                if 500 < area < 20000:
+                if 1000 < area < 10000:
                     rect = cv2.minAreaRect(c)
                     # calculate coordinates of the minimum area rectangle
                     box = cv2.boxPoints(rect)
                     # normalize coordinates to integers
                     box = np.int0(box)
                     # draw contours
-                    cv2.drawContours(img, [box], 0, (0, 0, 255), 3)
-                    rectangles.append(rect)
-
+                    if (abs(rect[1][0] - rect[1][1]) > 20):
+                        cv2.drawContours(img, [box], 0, (0, 0, 255), 3)
+                        rectangles.append(rect)
+    horizontal = []
+    vertical = []
+    # draw what we found so far
     for rect in rectangles:
         print(rect)
+        if abs(rect[2]) < 10:
+            horizontal.append(rect)
+        elif abs(abs(rect[2]) - 90) < 10:
+            vertical.append(rect)
+        drawRect(img, rect)
+    # attempt to complete missing corners
+    x_min = 0
+    y_max = img.shape[1]
+    for r in horizontal:
+        pass
+
+    print("======")
     return img
+
+
 
 def main():
     # Read and rotate image if you need
