@@ -20,15 +20,17 @@ kernel_sharpening = np.array([[-1, -1, -1],
 
 kernel_3x3 = np.ones((3, 3), np.float32) / 9
 
-kernel = np.ones((3, 3), np.uint8)
+kernel = np.ones((2, 2), np.uint8)
 
 images = read_images()
 for img in images:
     temp = img.copy()
+    ret, thresh = cv2.threshold(img, 180, 220, cv2.THRESH_TOZERO)
     gray = cv2.cvtColor(temp, cv2.COLOR_BGR2GRAY)
-    dst = cv2.fastNlMeansDenoisingColored(gray, None, 10, 10, 7, 21)
-    equ = cv2.equalizeHist(dst)
-    sharpened = cv2.filter2D(equ, -1, kernel_sharpening)
-    thresh = cv2.adaptiveThreshold(sharpened, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 11, 2)
-    thresh = cv2.cvtColor(thresh, cv2.COLOR_GRAY2BGR)
-    detect_circles(thresh)
+    erosion = cv2.erode(gray, kernel, iterations=2)
+    erosion = cv2.cvtColor(erosion, cv2.COLOR_GRAY2BGR)
+    circles = detect_circles(erosion, 1.5, 100, 20, 56)
+    if circles is not None and len(circles) > 0:
+        for (x, y, r) in circles:
+            draw_circle(x, y, r, temp)
+    show_image(img, temp)
