@@ -26,13 +26,9 @@ images = read_images()
 for img in images:
     temp = img.copy()
     gray = cv2.cvtColor(temp, cv2.COLOR_BGR2GRAY)
-    equ = cv2.equalizeHist(gray)
+    dst = cv2.fastNlMeansDenoisingColored(gray, None, 10, 10, 7, 21)
+    equ = cv2.equalizeHist(dst)
     sharpened = cv2.filter2D(equ, -1, kernel_sharpening)
-    circles = cv2.HoughCircles(sharpened, cv2.HOUGH_GRADIENT, 1.2, 100, minRadius=20, maxRadius=60)
-
-    if circles is not None:
-        circles = np.round(circles[0, :]).astype("int")
-        for (x, y, r) in circles:
-            draw_circle(x, y, r, sharpened)
-    show_image(equ, sharpened)
-    # detect_circles(orig)
+    thresh = cv2.adaptiveThreshold(sharpened, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 11, 2)
+    thresh = cv2.cvtColor(thresh, cv2.COLOR_GRAY2BGR)
+    detect_circles(thresh)
