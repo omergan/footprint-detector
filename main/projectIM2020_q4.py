@@ -27,16 +27,10 @@ for img in images:
     temp = img.copy()
     ret, thresh = cv2.threshold(img, 180, 220, cv2.THRESH_TOZERO)
     gray = cv2.cvtColor(temp, cv2.COLOR_BGR2GRAY)
-    erosion = cv2.erode(gray,kernel,iterations=2)
-    # show_image(img, erosion)
-    # continue
-    # equ = cv2.equalizeHist(gray)
-    # sharpened = cv2.filter2D(equ, -1, kernel_sharpening)
-    circles = cv2.HoughCircles(erosion, cv2.HOUGH_GRADIENT, 1.5, 100, minRadius=20, maxRadius=56)
-
-    if circles is not None:
-        circles = np.round(circles[0, :]).astype("int")
+    erosion = cv2.erode(gray, kernel, iterations=2)
+    erosion = cv2.cvtColor(erosion, cv2.COLOR_GRAY2BGR)
+    circles = detect_circles(erosion, 1.5, 100, 20, 56)
+    if circles is not None and len(circles) > 0:
         for (x, y, r) in circles:
             draw_circle(x, y, r, temp)
     show_image(img, temp)
-    # detect_circles(orig)

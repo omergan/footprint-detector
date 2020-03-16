@@ -17,17 +17,15 @@ def read_images():
         images.append(cv2.imread(filename))
     return images
 
-def detect_circles(orig):
+def detect_circles(orig, acc=1.2, min_dis=10, minR=20, maxR=60):
     # Pre processing
     img = orig.copy()
     img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     temp = orig.copy()
 
-    circles = cv2.HoughCircles(img, cv2.HOUGH_GRADIENT, 1.2, 10, minRadius=20, maxRadius=60)
+    circles = cv2.HoughCircles(img, cv2.HOUGH_GRADIENT, acc, min_dis, minRadius=minR, maxRadius=maxR)
     if circles is not None:
         circles = np.round(circles[0, :]).astype("int")
-        for (x, y, r) in circles:
-            draw_circle(x, y, r, temp)
     else:
         radii = np.arange(0, 30, 10)
         kernel = np.ones((5, 5), np.uint8)
@@ -44,9 +42,8 @@ def detect_circles(orig):
             if circles is None:
                 continue
             circles = np.round(circles[0, :]).astype("int")
-            for (x, y, r) in circles:
-                draw_circle(x, y, r, temp)
-    show_image(orig, temp)
+
+    return circles
 
 def draw_circle(x, y, r, img):
     color = (255, 255, 0)
@@ -61,4 +58,9 @@ def show_image(orig, img):
 if __name__ == '__main__':
     images = read_images()
     for image in images:
-        detect_circles(image)
+        circles = detect_circles(image)
+        temp = image.copy()
+        if circles is not None and len(circles) > 0:
+            for (x, y, r) in circles:
+                draw_circle(x, y, r, temp)
+        show_image(image, temp)
