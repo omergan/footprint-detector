@@ -33,6 +33,7 @@ def search_engine(database, search):
     maximum = 0
     match = []
     sift = cv2.xfeatures2d.SIFT_create()
+    good = []
     for i, candidate in enumerate(database):
         kp1, des1 = sift.detectAndCompute(working_copy, None)
         kp2, des2 = sift.detectAndCompute(candidate, None)
@@ -55,11 +56,12 @@ def search_engine(database, search):
                 match = candidate
         else:
             print("Not enough matches are found - %d !> %d" % (len(good), 10))
+    print(f'len of good is {len(good)}')
     show_image(search, match)
-
-images = read_images("../images/q3/*.png")
-db = read_images("../images/q2/*.png")
-for img in images:
-    search_engine(db, img)
+if __name__ == '__main__':
+    images = read_images("../images/q3/*.png")
+    db = read_images("../images/q2/*.png")
+    for img in images:
+        search_engine(db, img)
 
 
