@@ -56,7 +56,6 @@ def search_engine(database, search):
                 match = candidate
         else:
             print("Not enough matches are found - %d !> %d" % (len(good), 10))
-    print(f'len of good is {len(good)}')
     show_image(search, match)
 if __name__ == '__main__':
     images = read_images("../images/q3/*.png")

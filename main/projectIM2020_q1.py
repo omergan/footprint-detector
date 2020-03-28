@@ -63,10 +63,10 @@ def drawRect(img, rect):
             w = rect[1][0]/2
         else:
             return
-        cv2.circle(img, (int(rect[0][0] - h), int(rect[0][1] - w)), 3, (255, 0, 0), 3)
-        cv2.circle(img, (int(rect[0][0] - h), int(rect[0][1] + w)), 3, (255, 0, 0), 3)
-        cv2.circle(img, (int(rect[0][0] + h), int(rect[0][1] - w)), 3, (255, 0, 0), 3)
-        cv2.circle(img, (int(rect[0][0] + h), int(rect[0][1] + w)), 3, (255, 0, 0), 3)
+        cv2.circle(img, (int(rect[0][0] - h), int(rect[0][1] - w)), 5, (255, 0, 0), 3)
+        cv2.circle(img, (int(rect[0][0] - h), int(rect[0][1] + w)), 5, (255, 0, 0), 3)
+        cv2.circle(img, (int(rect[0][0] + h), int(rect[0][1] - w)), 5, (255, 0, 0), 3)
+        cv2.circle(img, (int(rect[0][0] + h), int(rect[0][1] + w)), 5, (255, 0, 0), 3)
 
 def chess_detection(image):
     img = image.copy()
@@ -84,8 +84,10 @@ def chess_detection(image):
 
     rectangles = []
     for thresh in thresh_holds:
-        # TODO : check for version
-        contours, _ = cv2.findContours(thresh, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+        if cv2.__version__.startswith("3"):
+            _, contours, _ = cv2.findContours(thresh, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+        else:
+            contours, _ = cv2.findContours(thresh, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
         for c in contours:
             # find bounding box coordinates
             peri = cv2.arcLength(c, True)
@@ -102,28 +104,18 @@ def chess_detection(image):
                     box = np.int0(box)
                     # draw contours
                     if abs(rect[1][0] - rect[1][1]) > 20:
-                        cv2.drawContours(img, [box], 0, (0, 0, 255), 3)
+                        # cv2.drawContours(img, [box], 0, (0, 0, 255), 3)
                         rectangles.append(rect)
     horizontal = []
     vertical = []
     # draw what we found so far
     for rect in rectangles:
-        print(rect)
         if abs(rect[2]) < 10:
             horizontal.append(rect)
         elif abs(abs(rect[2]) - 90) < 10:
             vertical.append(rect)
         drawRect(img, rect)
-    # attempt to complete missing corners
-    x_min = 0
-    y_max = img.shape[1]
-    for r in horizontal:
-        pass
-
-    print("======")
     return img
-
-
 
 def main():
     # Read and rotate image if you need
@@ -131,14 +123,14 @@ def main():
     img_rotate_90_counterclockwise = cv2.rotate(pictures[1], cv2.ROTATE_90_COUNTERCLOCKWISE)
 
     # Rulers Removed
-    # removed_1 = remove_ruler(pictures[0])
-    # removed_2 = remove_ruler(img_rotate_90_counterclockwise)
-    # removed_3 = remove_ruler(pictures[2])
+    removed_1 = remove_ruler(pictures[0])
+    removed_2 = remove_ruler(img_rotate_90_counterclockwise)
+    removed_3 = remove_ruler(pictures[2])
 
     # Plotting Q1A
-    # show_image(pictures[0], removed_1)
-    # show_image(img_rotate_90_counterclockwise, removed_2)
-    # show_image(pictures[2], removed_3)
+    show_image(pictures[0], removed_1)
+    show_image(img_rotate_90_counterclockwise, removed_2)
+    show_image(pictures[2], removed_3)
 
     detected_1 = chess_detection(pictures[0])
     detected_2 = chess_detection(img_rotate_90_counterclockwise)
