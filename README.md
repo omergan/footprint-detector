@@ -21,22 +21,31 @@ Finding the scales:
 #### Objective 
 Finding circle patterns in footprints
 #### Solution
-PLACEHOLDER
+* Find circles using houghCircles
+* If no circles are found, apply additional processing (erosion, canny)
+* Use HoughCircles again (in an increasing accumulator magnitude), this will help detect smaller circles
+* Draw the circles detected
 
 ## Part 3
 #### Objective 
 Finding a footprint in the database that matches a signature
 #### Solution
-PLACEHOLDER
+* Use SIFT to find interest points on the image
+* Use Flann algorithm to find matches
+* Rate matching between signature and database
+* Choose the best matched item
 
 ## Part 4
 #### Objective 
 Finding circle patterns on footprints in real images
 #### Solution
-PLACEHOLDER
+* Preprocessing of the image (threshold, erosion)
+* Use the algorithm from Part 2 to detect circles
+* Draw the circles
 
 ## Part 5
 #### Objective 
 Finding footprints in the database that match signatures of real footprints
 #### Solution
-PLACEHOLDER
+* Use algorithm of part 3
+* ???
