@@ -4,7 +4,18 @@
 #### Objective 
 Finding the scales in the image and removing them
 #### Solution
-PLACEHOLDER
+Removing the frame:
+* Preprocessing of the image (grayscale, erosion)
+* Detect edges using Canny
+* Find lines using HoughLines
+* Check which of the lines are the borders
+
+Finding the scales:
+* Apply threshold
+* Find contours using cv.findContours
+* Check which of the contours are in the right area size
+* Convert a contour to a rectangle
+* Draw corners according to rectangles that were found
 
 ## Part 2
 #### Objective 
